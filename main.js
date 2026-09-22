@@ -14,7 +14,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const messagesRef = db.ref();
+const messagesRef = db.ref('messages');
 const profileRef = db.ref('profile');
 
 // 2. DOM 요소 가져오기
@@ -187,14 +187,6 @@ btnDeleteGuide.addEventListener('click', () => {
     menuSheet.classList.add('hidden');
 });
 
-// 엔터키 전송 처리
-messageInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        chatForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-    }
-});
-
 // 메시지 전송 이벤트
 chatForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -295,8 +287,9 @@ function executeTextSend() {
 function renderMessage(msgId, data) {
     if (!data) return;
 
-    // 이미 생성된 메시지 엘리먼트가 있다면 무시
-    if (document.querySelector(`[data-id="${msgId}"]`)) return;
+    // 이미 동일한 ID의 메시지가 화면에 존재하는 경우 중복 생성 방지
+    const existingMsg = document.querySelector(`[data-id="${msgId}"]`);
+    if (existingMsg) return;
 
     let text = data.text || '';
     let senderType = data.senderType || 'user';
@@ -389,7 +382,12 @@ function getCurrentTime() {
     return formatTime(Date.now());
 }
 
+// 🟢 특수문자 탈출 및 줄바꿈(\n -> <br>) 처리
 function escapeHtml(str) {
     if (!str) return '';
-    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br>");
 }
