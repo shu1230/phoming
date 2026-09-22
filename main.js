@@ -96,7 +96,11 @@ profileRef.on('value', (snapshot) => {
 startChatBtn.addEventListener('click', () => {
     screen1.classList.remove('active');
     screen2.classList.add('active');
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // 🟢 화면이 짠 하고 나타난 뒤 스크롤을 맨 아래로 내려주도록 0.05초 지연
+    setTimeout(() => {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 50);
 });
 
 backBtn.addEventListener('click', () => {
@@ -386,8 +390,27 @@ messagesRef.on('child_removed', (snapshot) => {
     }
 });
 
+// 🟢 이전 변환 데이터(문자열 날짜)와 신규 데이터(숫자 타임스탬프) 모두 완벽 지원하는 시간 변환 함수
 function formatTime(timestamp) {
-    const date = new Date(timestamp);
+    if (!timestamp) return getCurrentTime();
+
+    let date;
+
+    if (typeof timestamp === 'number') {
+        // 1. 숫자 타임스탬프인 경우 (예: 1790052095529)
+        date = new Date(timestamp);
+    } else if (typeof timestamp === 'string') {
+        // 2. 문자열 날짜인 경우 (예: "2026-07-21T18:28:48.773Z")
+        date = new Date(timestamp);
+    } else {
+        date = new Date(timestamp);
+    }
+
+    // 날짜 변환이 실패했을 경우(NaN) 기본 현재시간 처리
+    if (isNaN(date.getTime())) {
+        return getCurrentTime();
+    }
+
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
