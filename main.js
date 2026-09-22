@@ -1,7 +1,21 @@
 // main.js
 
-// 1. 소켓 서버 연결
-const socket = io("https://neverdie-1.onrender.com");
+// 1. Firebase 초기화 설정
+const firebaseConfig = {
+  apiKey: "AIzaSyDG3i-s_3Y_1nea2BPf_tlwe4Rt_4oNdFg",
+  authDomain: "phoming.firebaseapp.com",
+  projectId: "phoming",
+  storageBucket: "phoming.firebasestorage.app",
+  messagingSenderId: "4650717163",
+  appId: "1:4650717163:web:cc2e21a66194641ebe13ae",
+  measurementId: "G-VZZ593T9ZV",
+  databaseURL: "https://phoming-default-rtdb.asia-southeast1.firebasedatabase.app" // 실시간 데이터베이스 URL
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const messagesRef = db.ref();
+const profileRef = db.ref('profile');
 
 // 2. DOM 요소 가져오기
 const screen1 = document.getElementById('screen-1');
@@ -40,19 +54,17 @@ const btnToggleArtist = document.getElementById('btn-toggle-artist');
 const btnDeleteGuide = document.getElementById('btn-delete-guide');
 const btnChangeStatusMsg = document.getElementById('btn-change-status-msg');
 
-// 상태 및 데이터 불러오기 (localStorage 기반)
+// 변수 설정
 let isArtistMode = false;
-let isAdmin = false; // 관리자 로그인 여부
+let isAdmin = false; 
 const ADMIN_PASSWORD = "12301995";
 
-let myNickname = localStorage.getItem('user_nickname') || '나';
-let profileImgUrl = localStorage.getItem('user_profile_img') || 'profile.png';
+let myNickname = '나';
+let profileImgUrl = 'profile.png';
+let statusMsgText = '감기 조심하세요...🤧';
+let artistNameText = '•૦•💗💗💗';
 
-// 🟢 상태 메시지를 '맘모스~🐘'로 변경
-let statusMsgText = localStorage.getItem('user_status_msg') || '맘모스~🐘';
-let artistNameText = localStorage.getItem('user_artist_name') || '•૦•💗💗💗';
-
-// 🟢 초기 동적 데이터 화면 적용
+// 🟢 화면에 프로필 데이터 적용 함수
 function applyStoredData() {
     mainProfileImg.src = profileImgUrl;
     headerProfileImg.src = profileImgUrl;
@@ -61,7 +73,21 @@ function applyStoredData() {
     headerArtistName.innerText = artistNameText;
 }
 
-applyStoredData();
+// 🟢 Firebase DB에 프로필 변경사항 저장 (모든 기기에 실시간 반영)
+function updateProfileToFirebase(updatedFields) {
+    profileRef.update(updatedFields);
+}
+
+// 🟢 Firebase 프로필 데이터 실시간 동기화 수신
+profileRef.on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+        if (data.artistName) artistNameText = data.artistName;
+        if (data.statusMsg) statusMsgText = data.statusMsg;
+        if (data.profileImgUrl) profileImgUrl = data.profileImgUrl;
+        applyStoredData();
+    }
+});
 
 // 화면 전환
 startChatBtn.addEventListener('click', () => {
@@ -92,13 +118,12 @@ moreBtn.addEventListener('click', () => {
     }
 });
 
-// 🟢 상태 메시지 변경 이벤트
+// 1️⃣ 상태 메시지 변경
 btnChangeStatusMsg.addEventListener('click', () => {
     const newStatus = prompt("새로운 상태 메시지를 입력하세요:", statusMsgText);
     if (newStatus !== null) {
-        statusMsgText = newStatus.trim() || '맘모스~🐘';
-        localStorage.setItem('user_status_msg', statusMsgText);
-        applyStoredData();
+        statusMsgText = newStatus.trim();
+        updateProfileToFirebase({ statusMsg: statusMsgText });
         alert("상태 메시지가 변경되었습니다.");
     }
 });
@@ -107,18 +132,17 @@ closeSheetBtn.addEventListener('click', () => {
     menuSheet.classList.add('hidden');
 });
 
-// 1️⃣ 아티스트 이름 설정
+// 2️⃣ 아티스트 이름 설정
 btnChangeArtistName.addEventListener('click', () => {
     const newName = prompt("새로운 이름을 입력하세요:", artistNameText);
     if (newName && newName.trim() !== '') {
         artistNameText = newName.trim();
-        localStorage.setItem('user_artist_name', artistNameText);
-        applyStoredData();
+        updateProfileToFirebase({ artistName: artistNameText });
         alert("짠!");
     }
 });
 
-// 2️⃣ 프로필 이미지 업로드
+// 3️⃣ 프로필 이미지 업로드
 btnChangeProfileImg.addEventListener('click', () => {
     menuSheet.classList.add('hidden');
     fileInputProfile.click();
@@ -129,14 +153,13 @@ fileInputProfile.addEventListener('change', (e) => {
     if (file) {
         compressImage(file, 400, 0.7, (compressedDataUrl) => {
             profileImgUrl = compressedDataUrl;
-            localStorage.setItem('user_profile_img', profileImgUrl);
-            applyStoredData();
+            updateProfileToFirebase({ profileImgUrl: profileImgUrl });
             alert("프로필 사진이 변경되었습니다.");
         });
     }
 });
 
-// 3️⃣ 답장 모드 (아티스트 ↔ 일반) 전환
+// 4️⃣ 답장 모드 전환
 btnToggleArtist.addEventListener('click', () => {
     isArtistMode = !isArtistMode;
     if (isArtistMode) {
@@ -158,16 +181,21 @@ function updateArtistModeButtonText() {
         : "답장/삭제(현재: OFF)";
 }
 
-// 4️⃣ 메시지 삭제 안내
+// 5️⃣ 메시지 삭제 안내
 btnDeleteGuide.addEventListener('click', () => {
     alert("채팅창에 등록된 메시지를 터치/클릭하면 삭제 여부를 묻는 창이 뜨며 바로 삭제할 수 있습니다.");
     menuSheet.classList.add('hidden');
 });
 
-// 🟢 [수정완료] 엔터 키 입력 시 전송하지 않고 기본 동작(줄바꿈) 실행
-// (키 다운 이벤트 방지/전송 연동 로직을 완전히 제거하였습니다)
+// 엔터키 전송 처리
+messageInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        chatForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    }
+});
 
-// 🟢 메시지 전송 이벤트 (관리자 모드 분기)
+// 메시지 전송 이벤트
 chatForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -178,7 +206,6 @@ chatForm.addEventListener('submit', (e) => {
     }
 });
 
-// 옵션 팝업 버튼 처리
 btnSendText.addEventListener('click', () => {
     sendOptionSheet.classList.add('hidden');
     executeTextSend();
@@ -186,7 +213,6 @@ btnSendText.addEventListener('click', () => {
 
 btnSendImage.addEventListener('click', () => {
     sendOptionSheet.classList.add('hidden');
-    
     if (!isAdmin) {
         alert("이미지 전송은 관리자만 가능합니다.");
         return;
@@ -198,7 +224,7 @@ closeSendOptionBtn.addEventListener('click', () => {
     sendOptionSheet.classList.add('hidden');
 });
 
-// 🟢 이미지 용량 압축 헬퍼 함수
+// 이미지 용량 압축 헬퍼 함수
 function compressImage(file, maxWidth, quality, callback) {
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -225,7 +251,6 @@ function compressImage(file, maxWidth, quality, callback) {
     reader.readAsDataURL(file);
 }
 
-// 이미지 파일 선택 후 전송
 chatImageInput.addEventListener('change', (e) => {
     if (!isAdmin) {
         alert("이미지는 관리자만 전송할 수 있습니다.");
@@ -238,12 +263,11 @@ chatImageInput.addEventListener('change', (e) => {
         compressImage(file, 600, 0.7, (compressedDataUrl) => {
             const senderType = isArtistMode ? 'artist' : 'user';
 
-            socket.emit('chatMessage', { 
+            messagesRef.push({
                 messageType: 'image',
                 text: compressedDataUrl,
                 senderType: senderType,
-                senderName: myNickname,
-                msgId: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5)
+                createdAt: Date.now()
             });
 
             chatImageInput.value = '';
@@ -251,42 +275,39 @@ chatImageInput.addEventListener('change', (e) => {
     }
 });
 
-// 텍스트 메시지 전송 로직
 function executeTextSend() {
     const text = messageInput.value.trim();
     if (!text) return;
 
     const senderType = isArtistMode ? 'artist' : 'user';
 
-    socket.emit('chatMessage', { 
+    messagesRef.push({
         messageType: 'text',
         text: text,
         senderType: senderType,
-        senderName: myNickname,
-        msgId: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5)
+        createdAt: Date.now()
     });
 
     messageInput.value = '';
 }
 
 // 🟢 메시지 HTML 생성 및 렌더링
-function renderMessage(data) {
+function renderMessage(msgId, data) {
     if (!data) return;
 
-    const isObject = typeof data === 'object';
-    let text = isObject ? data.text : data;
-    let senderType = isObject ? (data.senderType || 'user') : 'user';
-    let messageType = isObject ? (data.messageType || 'text') : 'text';
-    const msgId = isObject ? data.msgId : null;
+    // 이미 생성된 메시지 엘리먼트가 있다면 무시
+    if (document.querySelector(`[data-id="${msgId}"]`)) return;
+
+    let text = data.text || '';
+    let senderType = data.senderType || 'user';
+    let messageType = data.messageType || 'text';
 
     if (typeof text === 'string' && text.startsWith('data:image/')) {
         messageType = 'image';
     }
 
     const groupDiv = document.createElement('div');
-    if (msgId) {
-        groupDiv.setAttribute('data-id', msgId);
-    }
+    groupDiv.setAttribute('data-id', msgId);
 
     let contentHtml = '';
     
@@ -302,6 +323,8 @@ function renderMessage(data) {
         contentHtml = `<div class="message ${bubbleClass} delete-target">${escapeHtml(text)}</div>`;
     }
 
+    const timeStr = data.createdAt ? formatTime(data.createdAt) : getCurrentTime();
+
     if (senderType === 'artist') {
         groupDiv.classList.add('message-group', 'other');
         groupDiv.innerHTML = `
@@ -310,7 +333,7 @@ function renderMessage(data) {
                 <span class="msg-sender">${artistNameText}</span>
                 <div class="other-msg-container">
                     ${contentHtml}
-                    <span class="msg-time">${getCurrentTime()}</span>
+                    <span class="msg-time">${timeStr}</span>
                 </div>
             </div>
         `;
@@ -319,24 +342,21 @@ function renderMessage(data) {
         groupDiv.innerHTML = `
             <div class="msg-content">
                 <div class="msg-my-wrapper">
-                    <span class="msg-time">${getCurrentTime()}</span>
+                    <span class="msg-time">${timeStr}</span>
                     ${contentHtml}
                 </div>
             </div>
         `;
     }
 
+    // 🟢 영구 삭제 이벤트 연동 (Firebase DB에서 직접 제거)
     const clickableArea = groupDiv.querySelector('.delete-target');
     if (clickableArea) {
         clickableArea.addEventListener('click', () => {
             if (!isAdmin) return;
 
             if (confirm("해당 항목을 영구 삭제하시겠습니까?")) {
-                if (msgId) {
-                    socket.emit('deleteMessage', { msgId: msgId });
-                } else {
-                    groupDiv.remove();
-                }
+                messagesRef.child(msgId).remove();
             }
         });
     }
@@ -345,32 +365,28 @@ function renderMessage(data) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// 실시간 수신 이벤트
-socket.on('message', (data) => {
-    renderMessage(data);
+// 🟢 Firebase 대화 내역 불러오기 및 실시간 새 메시지 감지
+messagesRef.on('child_added', (snapshot) => {
+    renderMessage(snapshot.key, snapshot.val());
 });
 
-// 이전 대화 기록 로드
-socket.on('loadHistory', (history) => {
-    chatMessages.innerHTML = '';
-    if (Array.isArray(history)) {
-        history.forEach(data => renderMessage(data));
-    }
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-});
-
-socket.on('messageDeleted', (deletedMsgId) => {
-    const targetEl = document.querySelector(`[data-id="${deletedMsgId}"]`);
+// 🟢 Firebase 실시간 메시지 삭제 감지
+messagesRef.on('child_removed', (snapshot) => {
+    const targetEl = document.querySelector(`[data-id="${snapshot.key}"]`);
     if (targetEl) {
         targetEl.remove();
     }
 });
 
-function getCurrentTime() {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
+function formatTime(timestamp) {
+    const date = new Date(timestamp);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
+}
+
+function getCurrentTime() {
+    return formatTime(Date.now());
 }
 
 function escapeHtml(str) {
