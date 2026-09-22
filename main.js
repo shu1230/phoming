@@ -17,7 +17,6 @@ if (!firebase.apps.length) {
 }
 
 const db = firebase.database();
-// 🟢 messages 경로를 명확히 지정하여 실시간 연동
 const messagesRef = db.ref('messages');
 const profileRef = db.ref('profile');
 
@@ -97,7 +96,6 @@ startChatBtn.addEventListener('click', () => {
     screen1.classList.remove('active');
     screen2.classList.add('active');
     
-    // 🟢 화면이 짠 하고 나타난 뒤 스크롤을 맨 아래로 내려주도록 0.05초 지연
     setTimeout(() => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }, 50);
@@ -325,7 +323,7 @@ function renderMessage(msgId, data) {
         contentHtml = `<div class="message ${bubbleClass} delete-target">${escapeHtml(text)}</div>`;
     }
 
-    const timeStr = data.createdAt ? formatTime(data.createdAt) : getCurrentTime();
+    const timeStr = formatTime(data.createdAt);
 
     if (senderType === 'artist') {
         groupDiv.classList.add('message-group', 'other');
@@ -367,22 +365,24 @@ function renderMessage(msgId, data) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// 🟢 1. 페이지 최초 접속/새로고침 시 Firebase에 저장된 기존 메시지 전체 불러오기
-messagesRef.once('value', (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-        Object.keys(data).forEach((key) => {
-            renderMessage(key, data[key]);
-        });
-    }
-});
 
-// 🟢 2. 이후 새로 추가되는 메시지만 실시간으로 화면에 덧붙이기
+// ==================================================
+// 🟢 Firebase 데이터 실시간 수신 (중복 정의 제거 및 스크롤 완전 수정)
+// ==================================================
+
+// 1. child_added 이벤트로 초기 메시지 동기화 + 실시간 메시지 추가 처리
 messagesRef.on('child_added', (snapshot) => {
-    renderMessage(snapshot.key, snapshot.val());
+    const msgId = snapshot.key;
+    const msgData = snapshot.val();
+    
+    renderMessage(msgId, msgData);
+    
+    setTimeout(() => {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 50);
 });
 
-// 🟢 Firebase 삭제 감지
+// 2. Firebase 삭제 감지
 messagesRef.on('child_removed', (snapshot) => {
     const targetEl = document.querySelector(`[data-id="${snapshot.key}"]`);
     if (targetEl) {
@@ -390,34 +390,28 @@ messagesRef.on('child_removed', (snapshot) => {
     }
 });
 
-// 🟢 이전 변환 데이터(문자열 날짜)와 신규 데이터(숫자 타임스탬프) 모두 완벽 지원하는 시간 변환 함수
-function formatTime(timestamp) {
-    if (!timestamp) return getCurrentTime();
 
+// 🟢 안전한 시간 변환 함수 (무한 루프 방지 처리 완비)
+function formatTime(timestamp) {
     let date;
 
-    if (typeof timestamp === 'number') {
-        // 1. 숫자 타임스탬프인 경우 (예: 1790052095529)
+    if (!timestamp) {
+        date = new Date();
+    } else if (typeof timestamp === 'number') {
         date = new Date(timestamp);
     } else if (typeof timestamp === 'string') {
-        // 2. 문자열 날짜인 경우 (예: "2026-07-21T18:28:48.773Z")
         date = new Date(timestamp);
     } else {
-        date = new Date(timestamp);
+        date = new Date();
     }
 
-    // 날짜 변환이 실패했을 경우(NaN) 기본 현재시간 처리
     if (isNaN(date.getTime())) {
-        return getCurrentTime();
+        date = new Date();
     }
 
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
-}
-
-function getCurrentTime() {
-    return formatTime(Date.now());
 }
 
 // 🟢 특수문자 탈출 및 줄바꿈(\n -> <br>) 처리
