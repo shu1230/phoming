@@ -363,7 +363,17 @@ function renderMessage(msgId, data) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// 🟢 Firebase 데이터 실시간 수신 및 초기 로드
+// 🟢 1. 페이지 최초 접속/새로고침 시 Firebase에 저장된 기존 메시지 전체 불러오기
+messagesRef.once('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+        Object.keys(data).forEach((key) => {
+            renderMessage(key, data[key]);
+        });
+    }
+});
+
+// 🟢 2. 이후 새로 추가되는 메시지만 실시간으로 화면에 덧붙이기
 messagesRef.on('child_added', (snapshot) => {
     renderMessage(snapshot.key, snapshot.val());
 });
