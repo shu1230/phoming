@@ -60126,7 +60126,7 @@ messagesRef.on('child_added', (snapshot) => {
     renderMessage(msgId, msgData);
 
     if (msgData && msgData.text) {
-        checkHeartTrigger(msgData.text);
+        checkEmojiTrigger(msgData.text);
     }
     
     setTimeout(() => {
@@ -60276,40 +60276,70 @@ function loadPastMessages() {
 // 실행
 loadPastMessages();
 
-// ❤️ 하트 쏟아지는 이펙트 생성 함수
-function createHeartEffect() {
-    const heartCount = 28; // 화면에 쏟아질 하트 개수
+// 🟢 [이모지 매핑 설정] 
+// "채팅에 들어갈 이모지": "화면에 쏟아질 이모티콘"
+const EMOJI_EFFECT_MAP = {
+    '❤️': '❤️',
+    '🩷': '🩷',
+    '🧡': '🧡',
+    '💛': '💛',
+    '💚': '💚',
+    '🩵': '🩵',
+    '💙': '💙',
+    '💜': '💜',
+    '🖤': '🖤',
+    '🩶': '🩶',
+    '🤍': '🤍',
+    '🤎': '🤎',
+    '💕': '💕',
+    '💞': '💞',
+    '💓': '💓',
+    '💗': '💗',
+    '💖': '💖',
+    '🍀': '🍀',
+    '🐰': '🐰',
+    '🐬': '🐬',
+    '🫧': '🫧',
+    
+};
 
-    for (let i = 0; i < heartCount; i++) {
-        const heart = document.createElement('div');
-        heart.classList.add('heart-particle');
-        heart.innerText = '❤️';
+// 🟢 통합 애니메이션 이펙트 생성 함수
+function createEmojiEffect(effectEmoji) {
+    const particleCount = 25; // 모바일 최적화 개수
+    const screenWidth = window.innerWidth || document.documentElement.clientWidth;
 
-        // 다양한 느낌을 주기 위한 랜덤 값 설정
-        const startX = Math.random() * (window.innerWidth - 30); // 화면 가로 랜덤 위치
-        const duration = Math.random() * 2 + 1.8; // 1.8초 ~ 3.8초 사이 낙하 속도
-        const delay = Math.random() * 0.8; // 0초 ~ 0.8초 시차 출현
-        const fontSize = Math.random() * 16 + 16; // 16px ~ 32px 크기 랜덤
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('heart-particle'); // 기존 CSS 클래스 그대로 재사용
+        particle.innerText = effectEmoji; // 매핑된 이모티콘으로 출력!
 
-        heart.style.left = `${startX}px`;
-        heart.style.animationDuration = `${duration}s`;
-        heart.style.animationDelay = `${delay}s`;
-        heart.style.fontSize = `${fontSize}px`;
+        const startX = Math.random() * (screenWidth - 40); 
+        const duration = Math.random() * 2 + 1.8; 
+        const delay = Math.random() * 0.6; 
+        const fontSize = Math.random() * 12 + 16; 
 
-        document.body.appendChild(heart);
+        particle.style.left = `${startX}px`;
+        particle.style.animationDuration = `${duration}s`;
+        particle.style.animationDelay = `${delay}s`;
+        particle.style.fontSize = `${fontSize}px`;
 
-        // 애니메이션이 끝나면 메모리 관리를 위해 DOM에서 삭제
+        document.body.appendChild(particle);
+
         setTimeout(() => {
-            heart.remove();
+            particle.remove();
         }, (duration + delay) * 1000);
     }
 }
 
-// 🟢 메시지에 ❤️ 이모지가 들어있는지 검사하는 함수
-function checkHeartTrigger(text) {
+// 🟢 메시지 내 이모지 감지 함수
+function checkEmojiTrigger(text) {
     if (!text || typeof text !== 'string') return;
 
-    if (text.includes('❤️')) {
-        createHeartEffect();
+    // EMOJI_EFFECT_MAP에 등록된 이모지가 텍스트에 포함되어 있는지 확인
+    for (const [triggerKey, effectEmoji] of Object.entries(EMOJI_EFFECT_MAP)) {
+        if (text.includes(triggerKey)) {
+            createEmojiEffect(effectEmoji);
+            break; // 한 번 감지되면 이펙트 실행 후 종료
+        }
     }
 }
