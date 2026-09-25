@@ -60119,14 +60119,21 @@ function renderMessage(msgId, data) {
 // ==================================================
 
 // child_added 이벤트로 초기 메시지 동기화 + 실시간 메시지 추가 처리
+// 🟢 실시간 메시지 수신 이벤트
 messagesRef.on('child_added', (snapshot) => {
     const msgId = snapshot.key;
     const msgData = snapshot.val();
     
     renderMessage(msgId, msgData);
-
-    if (msgData && msgData.text) {
-        checkEmojiTrigger(msgData.text);
+    
+    // 💡 [수정 포인트] 방금 전송된 실시간 메시지인 경우에만 이펙트 발동!
+    // (메시지 생성 시간이 현재 시각 기준 10초 이내인 경우만 진짜 실시간으로 판단)
+    if (msgData && msgData.text && msgData.createdAt) {
+        const isRecent = (Date.now() - msgData.createdAt) < 10000; // 10초 이내 전송된 메시지
+        
+        if (isRecent) {
+            checkEmojiTrigger(msgData.text);
+        }
     }
     
     setTimeout(() => {
