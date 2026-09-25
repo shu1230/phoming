@@ -60300,28 +60300,58 @@ const EMOJI_EFFECT_MAP = {
     '🐰': '🐰',
     '🐬': '🐬',
     '🫧': '🫧',
-    
+    '🦄': '🦄',
+    '☁️': '☁️',
+    '🌙': '🌙',
+    '❄️': '❄️',
+    '✨': '✨',
+    '🐶': '🐶',
+    '🪽': '🪽',
+    '가나디': ['001.png','002.png','003.png'],
+    '시나모롤': []
+
 };
 
-// 🟢 통합 애니메이션 이펙트 생성 함수
-function createEmojiEffect(effectEmoji) {
-    const particleCount = 25; // 모바일 최적화 개수
+// 🟢 통합 애니메이션 이펙트 생성 함수 (이모지 & 이미지 파일 완벽 지원)
+function createEmojiEffect(effectContent) {
+    const particleCount = 20; // 이미지일 경우 성능을 위해 20개 정도가 적당합니다.
     const screenWidth = window.innerWidth || document.documentElement.clientWidth;
+
+    // 이미지 파일명인지 체크 (.png, .jpg, .webp, .gif 등)
+    const isImage = typeof effectContent === 'string' && 
+                    (effectContent.endsWith('.png') || 
+                     effectContent.endsWith('.jpg') || 
+                     effectContent.endsWith('.jpeg') || 
+                     effectContent.endsWith('.gif') || 
+                     effectContent.endsWith('.webp'));
 
     for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
-        particle.classList.add('heart-particle'); // 기존 CSS 클래스 그대로 재사용
-        particle.innerText = effectEmoji; // 매핑된 이모티콘으로 출력!
+        particle.classList.add('heart-particle');
+
+        // 1. 이미지 파일인 경우 <img> 태그 생성
+        if (isImage) {
+            const img = document.createElement('img');
+            img.src = effectContent;
+            img.style.width = '35px';  // 떨어질 이미지 가로 크기 (원하는대로 조절 가능)
+            img.style.height = 'auto';
+            img.style.display = 'block';
+            particle.appendChild(img);
+        } 
+        // 2. 일반 이모지인 경우 텍스트로 넣기
+        else {
+            particle.innerText = effectContent;
+            const fontSize = Math.random() * 12 + 16;
+            particle.style.fontSize = `${fontSize}px`;
+        }
 
         const startX = Math.random() * (screenWidth - 40); 
         const duration = Math.random() * 2 + 1.8; 
         const delay = Math.random() * 0.6; 
-        const fontSize = Math.random() * 12 + 16; 
 
         particle.style.left = `${startX}px`;
         particle.style.animationDuration = `${duration}s`;
         particle.style.animationDelay = `${delay}s`;
-        particle.style.fontSize = `${fontSize}px`;
 
         document.body.appendChild(particle);
 
@@ -60332,14 +60362,22 @@ function createEmojiEffect(effectEmoji) {
 }
 
 // 🟢 메시지 내 이모지 감지 함수
+// 🟢 메시지 내 이모지/키워드 감지 함수 (랜덤 선택 기능 추가!)
 function checkEmojiTrigger(text) {
     if (!text || typeof text !== 'string') return;
 
-    // EMOJI_EFFECT_MAP에 등록된 이모지가 텍스트에 포함되어 있는지 확인
-    for (const [triggerKey, effectEmoji] of Object.entries(EMOJI_EFFECT_MAP)) {
+    for (const [triggerKey, effectContent] of Object.entries(EMOJI_EFFECT_MAP)) {
         if (text.includes(triggerKey)) {
-            createEmojiEffect(effectEmoji);
-            break; // 한 번 감지되면 이펙트 실행 후 종료
+            let selectedEffect = effectContent;
+
+            // 🎲 값(effectContent)이 목록(배열)으로 들어있다면? -> 랜덤으로 하나 선택!
+            if (Array.isArray(effectContent)) {
+                const randomIndex = Math.floor(Math.random() * effectContent.length);
+                selectedEffect = effectContent[randomIndex];
+            }
+
+            createEmojiEffect(selectedEffect);
+            break; // 한 번 실행 후 종료
         }
     }
 }
