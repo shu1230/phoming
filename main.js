@@ -8075,7 +8075,7 @@ const PAST_MESSAGES = [
   "_id": {
     "$oid": "6aa17331cba3400019256243"
   },
-  "text": "입니다~^^ 웃긴 애들 짱 ჱ̒⸝⸝•̀֊•́⸝⸝)‪ ̖́–",
+  "text": "입니다~^^ 웃긴 애들 짱 ჱ̒⸝⸝•̀֊•́⸝⸝)‪ ̖́–",
   "senderType": "artist",
   "createdAt": {
     "$date": "2026-09-09T14:54:41.158Z"
@@ -60124,6 +60124,10 @@ messagesRef.on('child_added', (snapshot) => {
     const msgData = snapshot.val();
     
     renderMessage(msgId, msgData);
+
+    if (msgData && msgData.text) {
+        checkHeartTrigger(msgData.text);
+    }
     
     setTimeout(() => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -60271,3 +60275,41 @@ function loadPastMessages() {
 
 // 실행
 loadPastMessages();
+
+// ❤️ 하트 쏟아지는 이펙트 생성 함수
+function createHeartEffect() {
+    const heartCount = 28; // 화면에 쏟아질 하트 개수
+
+    for (let i = 0; i < heartCount; i++) {
+        const heart = document.createElement('div');
+        heart.classList.add('heart-particle');
+        heart.innerText = '❤️';
+
+        // 다양한 느낌을 주기 위한 랜덤 값 설정
+        const startX = Math.random() * (window.innerWidth - 30); // 화면 가로 랜덤 위치
+        const duration = Math.random() * 2 + 1.8; // 1.8초 ~ 3.8초 사이 낙하 속도
+        const delay = Math.random() * 0.8; // 0초 ~ 0.8초 시차 출현
+        const fontSize = Math.random() * 16 + 16; // 16px ~ 32px 크기 랜덤
+
+        heart.style.left = `${startX}px`;
+        heart.style.animationDuration = `${duration}s`;
+        heart.style.animationDelay = `${delay}s`;
+        heart.style.fontSize = `${fontSize}px`;
+
+        document.body.appendChild(heart);
+
+        // 애니메이션이 끝나면 메모리 관리를 위해 DOM에서 삭제
+        setTimeout(() => {
+            heart.remove();
+        }, (duration + delay) * 1000);
+    }
+}
+
+// 🟢 메시지에 ❤️ 이모지가 들어있는지 검사하는 함수
+function checkHeartTrigger(text) {
+    if (!text || typeof text !== 'string') return;
+
+    if (text.includes('❤️')) {
+        createHeartEffect();
+    }
+}

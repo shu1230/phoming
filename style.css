@@ -429,3 +429,29 @@ html, body {
 .chat-screen.artist-mode-bg {
     background-image: url('bg2.png') !important;
 }
+
+/* ❤️ 하트 애니메이션 요소 스타일 */
+.heart-particle {
+    position: fixed;
+    top: -30px;
+    pointer-events: none; /* 채팅 클릭이나 터치를 방해하지 않음 */
+    z-index: 9999;
+    user-select: none;
+    animation: heartFall linear forwards;
+}
+
+/* 아래로 부드럽게 떨어지면서 살짝 흔들리고 투명해지는 애니메이션 */
+@keyframes heartFall {
+    0% {
+        transform: translateY(0) rotate(0deg) scale(0.8);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(50vh) rotate(15deg) scale(1.1);
+        opacity: 0.9;
+    }
+    100% {
+        transform: translateY(105vh) rotate(-15deg) scale(0.6);
+        opacity: 0;
+    }
+}
