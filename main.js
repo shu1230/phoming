@@ -63,8 +63,8 @@ let isAdmin = false;
 const ADMIN_PASSWORD = "12301995";
 
 let profileImgUrl = 'profile.png';
-let statusMsgText = '감기 조심하세요...🤧';
-let artistNameText = '•૦•💗💗💗';
+let statusMsgText = '우르렁';
+let artistNameText = '맘머거쓰';
 
 // 🟢 화면 프로필 업데이트
 function applyStoredData() {
