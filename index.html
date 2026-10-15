@@ -15,14 +15,15 @@
         <div id="screen-1" class="screen active">
             <div class="profile-card">
                 <div class="profile-img-box">
-                    <img id="main-profile-img" src="profile.png" alt="Profile" class="artist-photo" onerror="this.src='https://via.placeholder.com/300x300?text=Profile+Photo'">
+                    <img id="main-profile-img" src="profile.jpg" alt="Profile" class="artist-photo" onerror="this.src='https://via.placeholder.com/300x300?text=Profile+Photo'">
                 </div>
 
                 <div class="card-info">
-                    <div class="doodle-box">
+                    <div class="doodle-box-1">
                         <img src="doodle.png" alt="doodle" class="doodle-img" onerror="this.style.display='none'">
                     </div>
-                    <h2 id="main-artist-name" class="artist-name">맘머거쓰</h2>
+
+                    <h2 id="main-artist-name" class="artist-name">💙🐰💙</h2>
                     <span id="main-status-msg" class="music-icon">우르렁</span>
                     <button id="start-chat-btn" class="chat-start-btn">대화하기</button>
                 </div>
@@ -31,7 +32,9 @@
 
         <!-- 2️⃣ 실시간 채팅 화면 -->
         <div id="screen-2" class="screen chat-screen">
-            
+            <!-- 🟢 눈 오버레이 레이어 -->
+            <div class="snow-overlay"></div>
+              
             <!-- 상단 헤더 -->
             <header class="chat-header">
                 <button id="back-btn" class="header-btn">
@@ -39,8 +42,8 @@
                 </button>
                 
                 <div class="header-profile">
-                    <img id="header-profile-img" src="profile.png" alt="Profile" class="header-thumb" onerror="this.src='https://via.placeholder.com/40'">
-                    <span id="header-artist-name" class="header-name">맘머거쓰</span>
+                    <img id="header-profile-img" src="profile.jpg" alt="Profile" class="header-thumb" onerror="this.src='https://via.placeholder.com/40'">
+                    <span id="header-artist-name" class="header-name">💙🐰💙</span>
                 </div>
                 
                 <!-- 🟢 더보기 버튼 (비밀번호 인증 후 관리자 메뉴 실행) -->
@@ -54,13 +57,14 @@
 
             <!-- 하단 입력창 -->
             <footer class="chat-footer">
+                <!-- 🟢 푸터 상단 장식 이미지 -->
                 <form id="chat-form" class="input-form">
                     <!-- 숨겨진 채팅 전용 이미지 파일 인풋 -->
                     <input type="file" id="chat-image-input" accept="image/*" style="display: none;">
                     
                     <textarea id="message-input" placeholder="메시지를 입력해 주세요." rows="1" autocomplete="off"></textarea>
                     <button type="submit" class="send-btn" id="send-btn">
-                        <img src="icon-send.png" alt="send" class="send-icon-img" onerror="this.style.display='none'; this.parentNode.innerText='➤'">
+                        <img src="icon-send2.png" alt="send" class="send-icon-img" onerror="this.style.display='none'; this.parentNode.innerText='➤'">
                     </button>
                 </form>
             </footer>

@@ -62,9 +62,9 @@ let isArtistMode = false;
 let isAdmin = false; 
 const ADMIN_PASSWORD = "12301995";
 
-let profileImgUrl = 'profile.png';
+let profileImgUrl = 'profile.jpg';
 let statusMsgText = '우르렁';
-let artistNameText = '맘머거쓰';
+let artistNameText = '💙🐰💙';
 
 // 🟢 화면 프로필 업데이트
 function applyStoredData() {
@@ -92,7 +92,15 @@ profileRef.on('value', (snapshot) => {
 });
 
 // 화면 전환
+// 🟢 사운드 객체 생성
+const clickSound = new Audio('sound.mp3');
+
+// 화면 전환
 startChatBtn.addEventListener('click', () => {
+    // 🟢 버튼 클릭 시 sound.mp3 재생
+    clickSound.currentTime = 0; // 연속 클릭 대비 재생 위치 초기화
+    clickSound.play().catch(e => console.log("사운드 재생 오류:", e));
+
     screen1.classList.remove('active');
     screen2.classList.add('active');
     
@@ -334,7 +342,7 @@ function renderMessage(msgId, data) {
     if (senderType === 'artist') {
         groupDiv.classList.add('message-group', 'other');
         groupDiv.innerHTML = `
-            <img src="${profileImgUrl}" class="msg-thumb" onerror="this.src='profile.png'">
+            <img src="${profileImgUrl}" class="msg-thumb" onerror="this.src='profile.jpg'">
             <div class="msg-content">
                 <span class="msg-sender">${artistNameText}</span>
                 <div class="other-msg-container">
@@ -505,7 +513,7 @@ function renderPastMessage(msg, index) {
     if (senderType === 'artist') {
         groupDiv.classList.add('message-group', 'other');
         groupDiv.innerHTML = `
-            <img src="${profileImgUrl}" class="msg-thumb" onerror="this.src='profile.png'">
+            <img src="${profileImgUrl}" class="msg-thumb" onerror="this.src='profile.jpg'">
             <div class="msg-content">
                 <span class="msg-sender">${artistNameText}</span>
                 <div class="other-msg-container">
@@ -596,6 +604,13 @@ const EMOJI_EFFECT_MAP = {
     '🍅': '🍅',
     '🐻‍❄️': '🐻‍❄️',
     '🍋': '🍋',
+    '🦹‍♀️': '🦹‍♀️',
+    '🚀': '🚀',
+    '🛸': '🛸',
+    '🐾': '🐾',
+    '🍊': '🍊',
+    '🐻‍❄️': '🐻‍❄️',
+    '🦟': '🦟',
     '가나디': ['001.png','002.png','003.png'],
     '오늘의 운세': ['004.png','005.png','006.png','007.png','008.png','009.png','010.png','011.png','012.png','013.png','014.png'],
     '랏코': ['015.png','016.png','017.png'],

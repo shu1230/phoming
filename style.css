@@ -54,11 +54,22 @@ html, body {
 
 /* 1️⃣ SCREEN 1 : 프로필 카드 */
 #screen-1 {
-    background: url('bg.png') no-repeat center center #a8d8ea;
+    background: url('bg.gif') no-repeat center center #a8d8ea;
     background-size: cover;
     justify-content: center;
     align-items: center;
     padding: 20px;
+}
+
+.doodle-box-1 {
+    position: absolute;
+    left: 175px;
+    top: -30px;
+}
+
+.doodle-img {
+    width: 120px;
+    height: auto;
 }
 
 .profile-card {
@@ -93,17 +104,6 @@ html, body {
     background: #fff;
 }
 
-.doodle-box {
-    position: absolute;
-    left: 236px;
-    top: -26px;
-}
-
-.doodle-img {
-    width: 38px;
-    height: auto;
-}
-
 .artist-name {
     font-size: 23px;
     font-weight: 700;
@@ -118,7 +118,7 @@ html, body {
 
 /* 대화하기 */
 .chat-start-btn {
-    background: linear-gradient(180deg, #f7faf3 10%, #96e44c 90%);
+    background: linear-gradient(180deg, #f7faf3 10%, #a781f8 90%); /* #a781f8 #96e44c */
     border: 1px solid #000;
     padding: 9px 19px;
     border-radius: 20px;
@@ -130,9 +130,23 @@ html, body {
 
 /* 2️⃣ SCREEN 2 : 채팅 화면 */
 .chat-screen {
-    background: url('chat-bg.png') no-repeat center center #FFF963;
+    background: url('chat-bg(2).png') no-repeat center center #FFF963;
     background-size: cover;
     position: relative;
+}
+
+/* 🟢 대화창 눈 내리는 효과 (GIF 배경의 검은색 제거를 위한 mix-blend-mode: screen) */
+.snow-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('snow.gif') repeat center center;
+    background-size: cover;
+    mix-blend-mode: screen; /* 검은 배경 투명하게 합성 */
+    pointer-events: none; /* 채팅 클릭 및 터치 클릭 방해 금지 */
+    z-index: 999; /* 채팅 메시지 위, 헤더/푸터 아래 위치 */
 }
 
 .chat-header {
@@ -141,7 +155,7 @@ html, body {
     left: 0;
     width: 100%;
     height: 64px;
-    background: url('header-bg.png') no-repeat center center rgba(255, 249, 99, 0.98);
+    background: url('header-bg2.png') no-repeat center center rgba(255, 249, 99, 0.98);
     background-size: cover;
     display: flex;
     align-items: center;
@@ -220,7 +234,7 @@ html, body {
     height: 24px;
     border-radius: 50%;
     object-fit: cover;
-    margin-top: 23px;
+    margin-top: 20px;
 }
 
 .msg-content {
@@ -265,7 +279,7 @@ html, body {
 }
 
 .message.other-msg {
-    background: linear-gradient(to bottom, #fff, #96e44c);
+    background: linear-gradient(to bottom, #fff, #a781f8); /* #a781f8 #96e44c */
     color: #000;
     border-radius: 0px 17px 17px 17px;
     border: 1px solid #000;
@@ -311,7 +325,7 @@ html, body {
     left: 0;
     width: 100%;
     height: 100px;
-    background: url('footer-bg.png') no-repeat center center rgba(255, 249, 99, 0.98);
+    background: url('footer-bg2.png') no-repeat center center rgba(255, 249, 99, 0.98);
     background-size: cover;
     padding: 8px 14px 44px 14px;
     z-index: 1000;
